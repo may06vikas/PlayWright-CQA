@@ -82,7 +82,7 @@ npx playwright test abc.test --headed --project=Chromium
 | Name | Description |
 |---|---|
 | LANG_Web=ALL GIO's | Future use. |
-| ENV=prod | Supports 'stage' and 'prod' environments. |
+| ENV=Stage & Prod | Supports 'stage' and 'prod' environments. |
 
 
 
