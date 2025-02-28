@@ -17,8 +17,6 @@ The project encompasses four distinct workflows for automated testing:
 2. **DC:** This workflow targets the DC Web application, validating its features and interactions with the DC platform.
 3. **DX:** This workflow aims to test the DX Web application, guaranteeing its content and user experience.
 
-
-```markdown
 ## Table of Contents
 
 - [Setup](#setup)
@@ -93,8 +91,6 @@ To view the HTML report, use:
 ```bash
 npx playwright show-report
 ```
-Sure, here is an updated README file that includes the framework overview and folder structure information:
-
 
 ## ACOM Automation Framework
 
