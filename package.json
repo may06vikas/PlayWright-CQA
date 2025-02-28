@@ -1,38 +1,14 @@
 {
   "name": "playwrightframework",
   "version": "1.0.0",
-  "description": "ACOM Automation Framework using Playwright",
+  "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:cc": "playwright test workflows/cc/tests --project=Chromium",
-    "test:dc": "playwright test workflows/dc/tests --project=Chromium",
-    "test:dx": "playwright test workflows/dx/tests --project=Chromium",
-    "allure:generate": "allure generate allure-results --clean",
-    "allure:open": "allure open allure-results",
-    "allure:report": "npm run allure:generate && npm run allure:open",
-    "test:with-allure": "playwright test && npm run allure:report"
-  },
-  "keywords": [
-    "playwright",
-    "automation",
-    "testing"
-  ],
+  "scripts": {},
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.50.1",
-    "@types/node": "^20.17.19",
-    "allure-playwright": "^2.15.1",
-    "typescript": "^5.7.3"
-  },
-  "dependencies": {
-    "fsevents": "^2.3.2",
-    "playwright": "^1.50.1",
-    "playwright-core": "^1.50.1",
-    "undici-types": "^6.20.0",
-    "xlsx": "^0.18.5"
+    "@types/node": "^22.13.4"
   }
 }
