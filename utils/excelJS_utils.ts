@@ -25,7 +25,7 @@ async function readUrlsFromExcel(): Promise<string[]> {
   const urls: string[] = [];
 
   try {
-    const excelFilePath = "/Users/i_ujjwal/CQAPlaywright/testdata/subtance3D.xlsx";
+    const excelFilePath = "C:/Users/ujjwalsingh/PlayWright-CQA/testData/subtance3D.xlsx";
 
     const workbook = xlsx.readFile(excelFilePath);
     const sheetName = workbook.SheetNames[0];

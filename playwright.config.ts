@@ -25,8 +25,9 @@ const excelConfig: ExcelConfig = {
  * See https://playwright.dev/docs/test-configuration.
  */
 const config: PlaywrightTestConfig = {
-  testDir: './workflows',
-  timeout: 600000000,
+  // testDir: './workflows',
+  testDir: 'workflows',
+  timeout: 20*6000000,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [
