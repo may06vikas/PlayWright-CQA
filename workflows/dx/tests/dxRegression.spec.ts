@@ -26,7 +26,7 @@ test.describe('Consonant Card Tests', () => {
 
   test('Launch URLs from Excel to validate consonent card', async () => {
     const urls = await readUrlsFromExcel();
-    let allCardDetails: { sourceUrl: string; Visible: boolean; href: string | null; statusCode: number }[] = [];
+    let allCardDetails: { sourceUrl: string; visible: string; href: string | null; statusCode: number }[] = [];
 
     for (const url of urls) {
       console.log(`Running test for URL: ${url}`);
@@ -38,7 +38,7 @@ test.describe('Consonant Card Tests', () => {
 
       const enrichedCardDetails = cardDetails.map(card => ({
         sourceUrl: url,
-        Visible: card.Visible,
+        visible: card.isVisible ? 'true' : 'false',
         href: card.href,
         statusCode: card.statusCode,
       }));
@@ -46,7 +46,7 @@ test.describe('Consonant Card Tests', () => {
       allCardDetails = allCardDetails.concat(enrichedCardDetails);
     }
 
-    await saveDataToExcel(allCardDetails, "test-results/output.xlsx");
+    await saveDataToExcel(allCardDetails, "C:/Users/ujjwalsingh/PlayWright-CQA/test-results/output.xlsx");
     console.log("All data saved to test-results/output.xlsx");
   });
 });
