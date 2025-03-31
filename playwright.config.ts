@@ -1,5 +1,5 @@
 import { PlaywrightTestConfig } from '@playwright/test';
-import path from 'path';
+import * as path from 'path';
 import type { ExcelConfig } from './utils/excelJS_utils';
 // import { readUrlsFromExcel, saveDataToExcel } from '../utils/excelJS_utils';
 
@@ -40,16 +40,16 @@ const config: PlaywrightTestConfig = {
     trace: 'retain-on-failure',
   },
   projects: [
-    // {
-    //   name: 'Chromium',
-    //   use: {
-    //     browserName: 'chromium',
-    //     viewport: { width: 1920, height: 1080 },
-    //     launchOptions: {
-    //       args: ['--start-maximized']
-    //     }
-    //   },
-    // },
+    {
+      name: 'Chromium',
+      use: {
+        browserName: 'chromium',
+        viewport: { width: 1080, height: 1080 },
+        launchOptions: {
+          args: ['--start-fullscreen']
+        }
+      },
+    },
     {
       name: 'Firefox',
       use: {
@@ -57,13 +57,13 @@ const config: PlaywrightTestConfig = {
         viewport: { width: 1920, height: 1080 },
       },
     },
-    // {
-    //   name: 'Webkit',
-    //   use: {
-    //     browserName: 'webkit',
-    //     viewport: { width: 1920, height: 1080 },
-    //   },
-    // },
+    {
+      name: 'Webkit',
+      use: {
+        browserName: 'webkit',
+        viewport: { width: 1920, height: 1080 },
+      },
+    },
   ],
 };
 
