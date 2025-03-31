@@ -1,5 +1,5 @@
-import xlsx from 'xlsx';
-import path from 'path';
+import * as xlsx from 'xlsx';
+import * as path from 'path';
 
 interface ExcelConfig {
   defaultExcelPath: string;
@@ -10,7 +10,7 @@ interface ExcelConfig {
 
 // Default configuration - can be overridden in config file
 const defaultConfig: ExcelConfig = {
-  defaultExcelPath: path.join(process.cwd(), 'testdata'),
+  defaultExcelPath: path.join(process.cwd(), 'testData'),
   sheets: {
     urls: 'urls.xlsx',
     results: 'results.xlsx'
@@ -25,7 +25,8 @@ async function readUrlsFromExcel(): Promise<string[]> {
   const urls: string[] = [];
 
   try {
-    const excelFilePath = "C:/Users/ujjwalsingh/PlayWright-CQA/testData/subtance3D.xlsx";
+    const excelFilePath = path.join(process.cwd(), 'testData', 'inputSheet.xlsx');
+    console.log('Reading Excel file from:', excelFilePath);
 
     const workbook = xlsx.readFile(excelFilePath);
     const sheetName = workbook.SheetNames[0];
