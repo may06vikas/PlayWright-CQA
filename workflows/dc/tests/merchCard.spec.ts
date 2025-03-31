@@ -1,10 +1,9 @@
-import { test, expect } from '@playwright/test';
-import { readUrlsFromExcel, saveDataToExcel } from '../../../utils/excelJS_utils';
+import { test } from '@playwright/test';
+import { readUrlsFromSheet, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { MerchCard } from '../src/merchCard.page';
+import { createParallelTests, extractCountryAndLocale } from '../../../utils/test-helpers';
 import * as path from 'path';
-import * as fs from 'fs';
 
-// Types
 interface MerchCardData {
     merchCardVis: string;
     merchCardTitle: string;
@@ -13,36 +12,6 @@ interface MerchCardData {
     tabName: string;
     cardCount: string;
     genAIBar: string;
-}
-
-function extractCountryAndLocale(url: string): { country: string; locale: string } {
-    try {
-        const urlParts = url.split(".com/")[1]?.split("/") || [];
-        const countryLocale = urlParts[0] || ""; // This will get country/locale code from URL
-        
-       
-        if (countryLocale.includes("_")) {          // Handle different URL patterns
-            
-            // For URLs with country_locale code like en_us
-            const [country, locale] = countryLocale.split("_");
-            console.log("Extracted country code:", country);
-            console.log("Extracted locale:", locale);
-            return { country, locale };
-        } else if (countryLocale.length === 2) {
-            // For URLs with only country code like us
-            console.log("Extracted country code:", countryLocale);
-            console.log("Extracted locale:", countryLocale);
-            return { country: countryLocale, locale: countryLocale };
-        } else {
-            // For URLs with only locale code like en
-            console.log("Extracted country code:", countryLocale);
-            console.log("Extracted locale:", countryLocale);
-            return { country: countryLocale, locale: countryLocale };
-        }
-    } catch (error) {
-        console.error("Error extracting country and locale:", error);
-        return { country: "", locale: "" };
-    }
 }
 
 function validateMerchCardData(merchCardData: MerchCardData): string {
@@ -64,10 +33,8 @@ function validateMerchCardData(merchCardData: MerchCardData): string {
         return "Fail";
     }
 
-    // Check card count
-    const cardCount = parseInt(merchCardData.cardCount);
-    if (cardCount !== 1) {
-        console.log(`Card count validation failed. Expected 1, found ${cardCount}`);
+    if (parseInt(merchCardData.cardCount) !== 1) {
+        console.log(`Card count validation failed. Expected 1, found ${merchCardData.cardCount}`);
         return "Fail";
     }
 
@@ -91,109 +58,57 @@ function createOutputRow(url: string, country: string, locale: string, merchCard
     ];
 }
 
-test.describe.parallel('Merch Card Validation', () => {
-    test('DC_milo_verifyMerchCard', async ({ page }) => {
-        const merchCard = new MerchCard(page);
-        
-        // Create test-results directory if it doesn't exist
-        const testResultsDir = path.join(process.cwd(), 'test-results');
-        if (!fs.existsSync(testResultsDir)) {
-            fs.mkdirSync(testResultsDir, { recursive: true });
-        }
-        
-        // Read URLs from Excel
-        let urls: string[] = [];
+async function runMerchCardTest({ page, sheetName, testResultsDir }) {
+    const merchCard = new MerchCard(page);
+    const urls = await readUrlsFromSheet(sheetName);
+    console.log(`Processing ${urls.length} URLs from sheet: ${sheetName}`);
+    
+    if (urls.length === 0) {
+        console.error(`No URLs found in sheet ${sheetName}`);
+        return;
+    }
+
+    const sheetResults = [[
+        "URL", "Country", "Locale", "Tab Name", "Merch Card Visibility", 
+        "Merch Card Title", "Merch Card CTA", "CTA Href", "Card Count", "GenAI Bar", "Validation Status"
+    ]];
+    
+    for (const url of urls) {
         try {
-            urls = await readUrlsFromExcel();
-            console.log(`Found ${urls.length} URLs to test`);
+            console.log(`Processing URL: ${url} from sheet: ${sheetName}`);
+            await page.goto(url);
+            await page.waitForTimeout(7000);
+            
+            const { country, locale } = extractCountryAndLocale(url);
+            
+            const businessTab = page.locator("//div[contains(@daa-lh,'tabs') or contains(@class,'tabs')][not(contains(@id,'demo') or contains(@id,'tabs-genaipdfstudents') or contains(@id,'tabs-prompts'))]//div[@class='tab-list-container' and @data-pretext='undefined']/button[not(./ancestor::div[contains(@class,'radio') and @id])]").nth(1);
+            await businessTab.click();
+            await page.waitForTimeout(5000);
+            
+            const merchCardData = await merchCard.getMerchCardData();
+            const row = createOutputRow(url, country, locale, merchCardData);
+            sheetResults.push(row);
+            
         } catch (error) {
-            console.error('Error reading URLs from Excel:', error);
-            return;
+            console.error(`Error processing URL ${url} from sheet ${sheetName}:`, error);
+            sheetResults.push([
+                url, "Error", "Error", "Error", "Error", "Error", "Error", "Error", "0", "Error", "Fail"
+            ]);
         }
+    }
+    
+    try {
+        const resultsBySheet = new Map<string, any[]>();
+        resultsBySheet.set(sheetName, sheetResults);
         
-        if (urls.length === 0) {
-            console.error('No URLs found in Excel file');
-            return;
-        }
-        
-        
-        const outputData: any[] = [[
-            "URL", "Country", "Locale", "Tab Name", "Merch Card Visibility", 
-            "Merch Card Title", "Merch Card CTA", "CTA Href", "Card Count", "GenAI Bar", "Validation Status"
-        ]];
-        
-        //Looping and processing each URL
-        for (const url of urls) {
-            try {
-                console.log(`Processing URL: ${url}`);
-                
-                // Navigate to URL
-                await page.goto(url);
-                console.log(`URL opened: ${url}`);
-                
-                // Wait for initial load
-                await page.waitForTimeout(7000);
-                
-                // Close geo popup modal if present
-                await merchCard.closeGeoPopUpModal();
-                
-                // Extract country and locale
-                const { country, locale } = extractCountryAndLocale(url);
-                
-                // Click on business tab
-                const businessTab = page.locator("//div[contains(@daa-lh,'tabs') or contains(@class,'tabs')][not(contains(@id,'demo') or contains(@id,'tabs-genaipdfstudents') or contains(@id,'tabs-prompts'))]//div[@class='tab-list-container' and @data-pretext='undefined']/button[not(./ancestor::div[contains(@class,'radio') and @id])]").nth(1);
-                await businessTab.click();
-                console.log("Clicked on business tab");
-                
-                // Wait for tab content to load
-                await page.waitForTimeout(5000);
-                
-                // Get merch card data
-                const merchCardData = await merchCard.getMerchCardData();
-                console.log("Merch Card Data:", merchCardData);
-                
-                // Add row to output data
-                outputData.push(createOutputRow(url, country, locale, merchCardData));
-                
-                // Save intermediate results after each URL
-                try {
-                    const outputPath = path.join(testResultsDir, 'merchCard_results.xlsx');
-                    await saveDataToExcel(outputData, outputPath);
-                    console.log(`Intermediate results saved to ${outputPath}`);
-                } catch (error) {
-                    console.error("Error saving intermediate results:", error);
-                }
-                
-            } catch (error) {
-                console.error(`Error processing URL ${url}:`, error);
-                // Add error row to output data
-                outputData.push([
-                    url, "Error", "Error", "Error", "Error", "Error", "Error", "Error", "0", "Error", "Fail"
-                ]);
-                
-                // Save results after error
-                try {
-                    const outputPath = path.join(testResultsDir, 'merchCard_results.xlsx');
-                    await saveDataToExcel(outputData, outputPath);
-                    console.log(`Results saved after error to ${outputPath}`);
-                } catch (saveError) {
-                    console.error("Error saving results after error:", saveError);
-                }
-            }
-        }
-        
-        // Save final results
-        try {
-            const outputPath = path.join(testResultsDir, 'merchCard_results.xlsx');
-            await saveDataToExcel(outputData, outputPath);
-            console.log(`Final results saved to ${outputPath}`);
-        } catch (error) {
-            console.error("Error saving final results:", error);
-        }
-        
+        const outputPath = path.join(testResultsDir, `merchCard_results_${sheetName}.xlsx`);
+        await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
+        console.log(`Results saved for sheet ${sheetName} to ${outputPath}`);
+    } catch (error) {
+        console.error(`Error saving results for sheet ${sheetName}:`, error);
+    }
+}
 
-        
-    });
-});
-
-
+// Create parallel tests for each sheet
+const sheetNames = ['dcPages1', 'dcPages2', 'dcPages3'];
+createParallelTests(runMerchCardTest, sheetNames); 
