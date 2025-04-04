@@ -1,6 +1,7 @@
 import { Page, test } from '@playwright/test';
 import * as path from 'path';
 import * as fs from 'fs';
+import { config } from './config';
 
 // Types
 export interface TestOptions {
@@ -12,6 +13,35 @@ export interface TestOptions {
 export interface CountryLocale {
     country: string;
     locale: string;
+}
+
+interface TestFixture {
+    page: Page;
+    workerIndex: number;
+    totalWorkers: number;
+}
+
+/**
+ * Creates tests distributed across multiple workers
+ */
+export function createWorkerTests(
+    testName: string,
+    testFn: (options: { page: Page, workerIndex: number, totalWorkers: number }) => Promise<void>
+) {
+    const totalWorkers = config.workers.count;
+    console.log(`Creating ${totalWorkers} worker tests`);
+
+    for (let workerIndex = 0; workerIndex < totalWorkers; workerIndex++) {
+        test(`${testName} - Worker ${workerIndex + 1}/${totalWorkers}`, async ({ page }) => {
+            // Ensure test results directory exists
+            const testResultsDir = path.join(process.cwd(), config.paths.testResults);
+            if (!fs.existsSync(testResultsDir)) {
+                fs.mkdirSync(testResultsDir, { recursive: true });
+            }
+            
+            await testFn({ page, workerIndex, totalWorkers });
+        });
+    }
 }
 
 /**

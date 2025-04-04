@@ -1,11 +1,21 @@
 import { test } from '@playwright/test';
-import { readUrlsFromSheet, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
+import { getUrlsForWorker, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { CompareCards } from '../src/compareCards.page';
-import { createParallelTests, extractCountryAndLocale } from '../../../utils/test-helpers';
+import { createWorkerTests, extractCountryAndLocale, closeGeoPopUpModal } from '../../../utils/test-helpers';
 import * as path from 'path';
-import * as fs from 'fs';
+import { config } from '../../../utils/config';
 
-function validateCompareCardsData(compareCardsData: any): string {
+interface CompareCardsData {
+    compareCardsVis: string;
+    compareCardsCount: string;
+    compareCard1Title: string;
+    compareCard2Title: string;
+    compareCard3Title: string;
+    compareCardsCTAs: string[];
+    compareCardsCTAHrefs: string[];
+}
+
+function validateCompareCardsData(compareCardsData: CompareCardsData): string {
     const requiredFields = [
         { value: compareCardsData.compareCardsVis, name: "Compare Cards Visibility" },
         { value: compareCardsData.compareCard1Title, name: "Card 1 Title" },
@@ -35,7 +45,7 @@ function validateCompareCardsData(compareCardsData: any): string {
     return "Pass";
 }
 
-function createOutputRow(url: string, country: string, locale: string, compareCardsData: any): any[] {
+function createOutputRow(url: string, country: string, locale: string, compareCardsData: CompareCardsData): any[] {
     const validationStatus = validateCompareCardsData(compareCardsData);
     return [
         url,
@@ -52,54 +62,57 @@ function createOutputRow(url: string, country: string, locale: string, compareCa
     ];
 }
 
-async function runCompareCardsTest({ page, sheetName, testResultsDir }) {
+createWorkerTests('Compare Cards Tests', async ({ page, workerIndex, totalWorkers }) => {
     const compareCards = new CompareCards(page);
-    const urls = await readUrlsFromSheet(sheetName);
-    console.log(`Processing ${urls.length} URLs from sheet: ${sheetName}`);
     
-    if (urls.length === 0) {
-        console.error(`No URLs found in sheet ${sheetName}`);
-        return;
-    }
-
-    const sheetResults = [[
-        "URL", "Country", "Locale", "Compare Cards Visibility", "Card Count",
-        "Card 1 Title", "Card 2 Title", "Card 3 Title",
-        "CTAs", "CTA Hrefs", "Validation Status"
-    ]];
+    // Get URLs assigned to this worker
+    const urlsBySheet = await getUrlsForWorker(workerIndex, totalWorkers);
+    console.log(`Worker ${workerIndex + 1} received ${Array.from(urlsBySheet.keys()).length} sheets to process`);
     
-    for (const url of urls) {
+    // Process each sheet's URLs
+    for (const [sheetName, urls] of urlsBySheet.entries()) {
+        console.log(`Worker ${workerIndex + 1} processing sheet ${sheetName} with ${urls.length} URLs`);
+        
+        const sheetResults = [[
+            "URL", "Country", "Locale", "Compare Cards Visibility", "Card Count",
+            "Card 1 Title", "Card 2 Title", "Card 3 Title",
+            "CTAs", "CTA Hrefs", "Validation Status"
+        ]];
+        
+        for (const url of urls) {
+            try {
+                console.log(`Worker ${workerIndex + 1} processing URL: ${url}`);
+                await page.goto(url);
+                await page.waitForTimeout(2000); // Wait for initial load
+                
+                // Handle geo popup if present
+                await closeGeoPopUpModal(page);
+                
+                await page.waitForTimeout(5000); // Wait for page to stabilize
+                
+                const { country, locale } = extractCountryAndLocale(url);
+                const compareCardsData = await compareCards.getCompareCardsData();
+                
+                const row = createOutputRow(url, country, locale, compareCardsData);
+                sheetResults.push(row);
+                
+            } catch (error) {
+                console.error(`Worker ${workerIndex + 1} error processing URL ${url}:`, error);
+                sheetResults.push([
+                    url, "Error", "Error", "Error", "0", "Error", "Error", "Error", "Error", "Error", "Fail"
+                ]);
+            }
+        }
+        
         try {
-            console.log(`Processing URL: ${url} from sheet: ${sheetName}`);
-            await page.goto(url);
-            await page.waitForTimeout(7000);
+            const resultsBySheet = new Map<string, any[]>();
+            resultsBySheet.set(sheetName, sheetResults);
             
-            const { country, locale } = extractCountryAndLocale(url);
-            const compareCardsData = await compareCards.getCompareCardsData();
-            
-            const row = createOutputRow(url, country, locale, compareCardsData);
-            sheetResults.push(row);
-            
+            const outputPath = path.join(process.cwd(), config.paths.testResults, `compareCards_results_worker${workerIndex + 1}_${sheetName}.xlsx`);
+            await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
+            console.log(`Worker ${workerIndex + 1} saved results for ${sheetName} to ${outputPath}`);
         } catch (error) {
-            console.error(`Error processing URL ${url} from sheet ${sheetName}:`, error);
-            sheetResults.push([
-                url, "Error", "Error", "Error", "0", "Error", "Error", "Error", "Error", "Error", "Fail"
-            ]);
+            console.error(`Worker ${workerIndex + 1} error saving results for ${sheetName}:`, error);
         }
     }
-    
-    try {
-        const resultsBySheet = new Map<string, any[]>();
-        resultsBySheet.set(sheetName, sheetResults);
-        
-        const outputPath = path.join(testResultsDir, `compareCards_results_${sheetName}.xlsx`);
-        await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
-        console.log(`Results saved for sheet ${sheetName} to ${outputPath}`);
-    } catch (error) {
-        console.error(`Error saving results for sheet ${sheetName}:`, error);
-    }
-}
-
-// Create parallel tests for each sheet
-const sheetNames = ['dcPages1', 'dcPages2', 'dcPages3'];
-createParallelTests(runCompareCardsTest, sheetNames); 
+}); 
