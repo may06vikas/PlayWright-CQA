@@ -1,5 +1,6 @@
 import * as xlsx from 'xlsx';
 import * as path from 'path';
+import { config } from './config';
 
 interface ExcelConfig {
   defaultExcelPath: string;
@@ -24,7 +25,7 @@ export async function readUrlsFromSheet(sheetName: string): Promise<string[]> {
     const urls: string[] = [];
 
     try {
-        const excelFilePath = path.join(process.cwd(), 'testData', 'inputSheet.xlsx');
+        const excelFilePath = path.join(process.cwd(), config.excel.inputPath);
         console.log(`Reading Excel file from: ${excelFilePath}, Sheet: ${sheetName}`);
 
         const workbook = xlsx.readFile(excelFilePath);
@@ -50,40 +51,46 @@ export async function readUrlsFromSheet(sheetName: string): Promise<string[]> {
 }
 
 /**
- * Read URLs from all dcPages sheets in an Excel file
- * @returns Promise<Map<string, string[]>> Map of sheet names to arrays of URLs
+ * Read URLs from all sheets and distribute them evenly across workers
  */
-async function readUrlsFromAllSheets(): Promise<Map<string, string[]>> {
-  const urlsBySheet = new Map<string, string[]>();
-
-  try {
-    const excelFilePath = path.join(process.cwd(), 'testData', 'inputSheet.xlsx');
-    console.log('Reading Excel file from:', excelFilePath);
-
-    const workbook = xlsx.readFile(excelFilePath);
-    const dcPagesSheets = workbook.SheetNames.filter(name => name.startsWith('dcPages'));
+export async function getUrlsForWorker(workerIndex: number, totalWorkers: number): Promise<Map<string, string[]>> {
+    const allUrls = new Map<string, string[]>();
     
-    for (const sheetName of dcPagesSheets) {
-      const sheet = workbook.Sheets[sheetName];
-      const jsonData = xlsx.utils.sheet_to_json(sheet);
-      const urls: string[] = [];
-      
-      jsonData.forEach((row: any) => {
-        if (row.url) {
-          urls.push(row.url);
-        }
-      });
-      
-      if (urls.length > 0) {
-        urlsBySheet.set(sheetName, urls);
-        console.log(`Found ${urls.length} URLs in sheet ${sheetName}`);
-      }
-    }
-  } catch (error) {
-    console.error('Error reading Excel file:', error);
-  }
+    try {
+        const excelFilePath = path.join(process.cwd(), config.excel.inputPath);
+        console.log(`Worker ${workerIndex + 1}: Reading Excel file from ${excelFilePath}`);
 
-  return urlsBySheet;
+        const workbook = xlsx.readFile(excelFilePath);
+        const dcPagesSheets = workbook.SheetNames.filter(name => 
+            name.startsWith(config.excel.sheetPrefix)
+        );
+        
+        // Distribute sheets across workers
+        const sheetsForThisWorker = dcPagesSheets.filter((_, index) => 
+            index % totalWorkers === workerIndex
+        );
+        
+        for (const sheetName of sheetsForThisWorker) {
+            const sheet = workbook.Sheets[sheetName];
+            const jsonData = xlsx.utils.sheet_to_json(sheet);
+            const urls: string[] = [];
+            
+            jsonData.forEach((row: any) => {
+                if (row.url) {
+                    urls.push(row.url);
+                }
+            });
+            
+            if (urls.length > 0) {
+                allUrls.set(sheetName, urls);
+                console.log(`Worker ${workerIndex + 1}: Found ${urls.length} URLs in sheet ${sheetName}`);
+            }
+        }
+    } catch (error) {
+        console.error(`Worker ${workerIndex + 1}: Error reading Excel file:`, error);
+    }
+
+    return allUrls;
 }
 
 /**
@@ -116,7 +123,6 @@ async function saveDataToExcel(data: any[], fileName: string): Promise<void> {
 }
 
 export { 
-  saveDataToExcel, 
-  readUrlsFromAllSheets,
-  ExcelConfig 
+    saveDataToExcel,
+    ExcelConfig 
 };

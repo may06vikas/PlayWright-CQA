@@ -309,4 +309,29 @@ export class UnityVerbWidget {
         
         return widgetData;
     }
+
+    async getUnityVerbData() {
+        return {
+            widgetVis: await this.getElementVisibility('div[class*="unity-verb-widget"]'),
+            widgetTitle: await this.getElementText('div[class*="unity-verb-widget"] .title'),
+            widgetCTA: await this.getElementText('div[class*="unity-verb-widget"] .cta'),
+            widgetCTAHref: await this.getElementAttribute('div[class*="unity-verb-widget"] .cta', 'href'),
+            tabName: await this.getElementText('button.active[role="tab"]')
+        };
+    }
+
+    private async getElementVisibility(selector: string): Promise<string> {
+        const element = this.page.locator(selector);
+        return await element.isVisible() ? "Visible" : "Not Visible";
+    }
+
+    private async getElementText(selector: string): Promise<string> {
+        const element = this.page.locator(selector);
+        return await element.isVisible() ? (await element.textContent() || "") : "Not Visible";
+    }
+
+    private async getElementAttribute(selector: string, attribute: string): Promise<string> {
+        const element = this.page.locator(selector);
+        return await element.isVisible() ? (await element.getAttribute(attribute) || "") : "Not Visible";
+    }
 } 

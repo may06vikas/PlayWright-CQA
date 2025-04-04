@@ -20,8 +20,11 @@ const config: PlaywrightTestConfig = {
   retries: process.env.CI ? 2 : 0,
   
   // Enable parallel execution
-  workers: process.env.CI ? 1 : undefined, // Use max workers in local, 1 in CI
-  fullyParallel: true, // Enable full parallelization
+  workers: process.env.WORKERS ? parseInt(process.env.WORKERS) : 3,
+  fullyParallel: true,
+  
+  // Use a separate worker for each test file
+  maxFailures: 1,
   
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
@@ -38,6 +41,8 @@ const config: PlaywrightTestConfig = {
     viewport: { width: 1920, height: 1080 },
     actionTimeout: 30000,
     navigationTimeout: 30000,
+    // Launch browser in headless mode for CI, headed for local
+    headless: !!process.env.CI,
   },
   
   projects: [

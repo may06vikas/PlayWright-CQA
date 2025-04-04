@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
-import { readUrlsFromSheet, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
+import { getUrlsForWorker, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { MerchCard } from '../src/merchCard.page';
-import { createParallelTests, extractCountryAndLocale } from '../../../utils/test-helpers';
+import { createWorkerTests, extractCountryAndLocale, closeGeoPopUpModal } from '../../../utils/test-helpers';
 import * as path from 'path';
 
 interface MerchCardData {
@@ -58,57 +58,64 @@ function createOutputRow(url: string, country: string, locale: string, merchCard
     ];
 }
 
-async function runMerchCardTest({ page, sheetName, testResultsDir }) {
-    const merchCard = new MerchCard(page);
-    const urls = await readUrlsFromSheet(sheetName);
-    console.log(`Processing ${urls.length} URLs from sheet: ${sheetName}`);
-    
-    if (urls.length === 0) {
-        console.error(`No URLs found in sheet ${sheetName}`);
-        return;
-    }
+// Create test-results directory if it doesn't exist
+const testResultsDir = path.join(process.cwd(), 'test-results');
 
-    const sheetResults = [[
-        "URL", "Country", "Locale", "Tab Name", "Merch Card Visibility", 
-        "Merch Card Title", "Merch Card CTA", "CTA Href", "Card Count", "GenAI Bar", "Validation Status"
-    ]];
+// Create worker-based tests
+createWorkerTests('MerchCard Tests', async ({ page, workerIndex, totalWorkers }) => {
+    const merchCard = new MerchCard(page);
     
-    for (const url of urls) {
+    // Get URLs assigned to this worker
+    const urlsBySheet = await getUrlsForWorker(workerIndex, totalWorkers);
+    console.log(`Worker ${workerIndex + 1} received ${Array.from(urlsBySheet.keys()).length} sheets to process`);
+    
+    // Process each sheet's URLs
+    for (const [sheetName, urls] of urlsBySheet.entries()) {
+        console.log(`Worker ${workerIndex + 1} processing sheet ${sheetName} with ${urls.length} URLs`);
+        
+        const sheetResults = [[
+            "URL", "Country", "Locale", "Tab Name", "Merch Card Visibility", 
+            "Merch Card Title", "Merch Card CTA", "CTA Href", "Card Count", "GenAI Bar", "Validation Status"
+        ]];
+        
+        for (const url of urls) {
+            try {
+                console.log(`Worker ${workerIndex + 1} processing URL: ${url}`);
+                await page.goto(url);
+                await page.waitForTimeout(4000); // Wait for initial load
+                
+                // Handle geo popup if present
+                await closeGeoPopUpModal(page);
+                
+                await page.waitForTimeout(5000); // Wait for page to stabilize
+                
+                const { country, locale } = extractCountryAndLocale(url);
+                
+                const businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
+                await businessTab.click();
+                await page.waitForTimeout(5000);
+                
+                const merchCardData = await merchCard.getMerchCardData();
+                const row = createOutputRow(url, country, locale, merchCardData);
+                sheetResults.push(row);
+                
+            } catch (error) {
+                console.error(`Worker ${workerIndex + 1} error processing URL ${url}:`, error);
+                sheetResults.push([
+                    url, "Error", "Error", "Error", "Error", "Error", "Error", "Error", "0", "Error", "Fail"
+                ]);
+            }
+        }
+        
         try {
-            console.log(`Processing URL: ${url} from sheet: ${sheetName}`);
-            await page.goto(url);
-            await page.waitForTimeout(7000);
+            const resultsBySheet = new Map<string, any[]>();
+            resultsBySheet.set(sheetName, sheetResults);
             
-            const { country, locale } = extractCountryAndLocale(url);
-            
-            const businessTab = page.locator("//div[contains(@daa-lh,'tabs') or contains(@class,'tabs')][not(contains(@id,'demo') or contains(@id,'tabs-genaipdfstudents') or contains(@id,'tabs-prompts'))]//div[@class='tab-list-container' and @data-pretext='undefined']/button[not(./ancestor::div[contains(@class,'radio') and @id])]").nth(1);
-            await businessTab.click();
-            await page.waitForTimeout(5000);
-            
-            const merchCardData = await merchCard.getMerchCardData();
-            const row = createOutputRow(url, country, locale, merchCardData);
-            sheetResults.push(row);
-            
+            const outputPath = path.join(testResultsDir, `merchCard_results_worker${workerIndex + 1}_${sheetName}.xlsx`);
+            await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
+            console.log(`Worker ${workerIndex + 1} saved results for ${sheetName} to ${outputPath}`);
         } catch (error) {
-            console.error(`Error processing URL ${url} from sheet ${sheetName}:`, error);
-            sheetResults.push([
-                url, "Error", "Error", "Error", "Error", "Error", "Error", "Error", "0", "Error", "Fail"
-            ]);
+            console.error(`Worker ${workerIndex + 1} error saving results for ${sheetName}:`, error);
         }
     }
-    
-    try {
-        const resultsBySheet = new Map<string, any[]>();
-        resultsBySheet.set(sheetName, sheetResults);
-        
-        const outputPath = path.join(testResultsDir, `merchCard_results_${sheetName}.xlsx`);
-        await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
-        console.log(`Results saved for sheet ${sheetName} to ${outputPath}`);
-    } catch (error) {
-        console.error(`Error saving results for sheet ${sheetName}:`, error);
-    }
-}
-
-// Create parallel tests for each sheet
-const sheetNames = ['dcPages1', 'dcPages2', 'dcPages3'];
-createParallelTests(runMerchCardTest, sheetNames); 
+}); 

@@ -22,10 +22,11 @@ export class MerchCard {
 
     constructor(page: Page) {
         this.page = page;
-        this.businessTab = page.locator("//div[contains(@daa-lh,'tabs') or contains(@class,'tabs')][not(contains(@id,'demo') or contains(@id,'tabs-genaipdfstudents') or contains(@id,'tabs-prompts'))]//div[@class='tab-list-container' and @data-pretext='undefined']/button[not(./ancestor::div[contains(@class,'radio') and @id])]").nth(1);
-        this.merchCard = page.locator("[class='merch-card mini-compare-chart static-links']");
-        this.merchCardTitle = page.locator("[class='merch-card mini-compare-chart static-links'] h3[class='card-heading']");
-        this.merchCardCTA = page.locator("[class='merch-card mini-compare-chart static-links'] div[slot='footer'] p[class='action-area'] a[class='con-button outline button-l']");
+        this.businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
+        // this.merchCard = page.locator("[class='merch-card mini-compare-chart static-links']");
+        this.merchCard = page.locator("merch-card.static-links");
+        this.merchCardTitle = page.locator("merch-card.static-links h3[class='card-heading']");
+        this.merchCardCTA = page.locator("merch-card.static-links div[slot='footer'] p[class='action-area'] a[class='con-button outline button-l']");
         this.merchCardGenAIBar = page.locator("//div[contains(@daa-lh,'tabs') or contains(@class,'tabs')][not(contains(@id,'demo') or contains(@id,'tabs-genaipdfstudents') or contains(@id,'tabs-prompts'))]//div[contains(@class,'dark flexible')]");
     }
 

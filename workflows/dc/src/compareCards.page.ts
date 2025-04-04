@@ -89,7 +89,8 @@ export class CompareCards {
             let retryCount = 0;
             while (retryCount < 3) {
                 compareCardsElements = await this.page.locator("div[daa-lh='b1|table'] div[class='row row-2 row-heading'] [role='columnheader']").all();
-                if (compareCardsElements.length > 0) break;
+                if (compareCardsElements.length > 0) 
+                    break;
                 await this.page.waitForTimeout(2000);
                 retryCount++;
             }
