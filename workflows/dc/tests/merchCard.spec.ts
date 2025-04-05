@@ -29,14 +29,23 @@ function validateMerchCardData(merchCardData: MerchCardData): string {
         field.value === "Not Visible" || field.value === "NA" || field.value === ""
     );
 
+    const totalCards = parseInt(merchCardData.cardCount);
+    console.log(`Total merch cards found: ${totalCards}`);
+
+    // Fail if there are multiple cards
+    if (totalCards > 1) {
+        console.log(`Validation failed: Found ${totalCards} merch cards, expected 1`);
+        return `Fail (${totalCards} cards)`;
+    }
+
     if (failedFields.length > 0) {
         console.log("Failed fields:", failedFields.map(f => f.name).join(", "));
         return "Fail";
     }
 
-    if (parseInt(merchCardData.cardCount) !== 1) {
-        console.log(`Card count validation failed. Expected 1, found ${merchCardData.cardCount}`);
-        return "Fail";
+    if (totalCards === 0) {
+        console.log("No merch cards found");
+        return "Fail (0 cards)";
     }
 
     return "Pass";
@@ -99,7 +108,10 @@ createWorkerTests('MerchCard Tests', async ({ page: oldPage, workerIndex, totalW
                     
                     await page.waitForTimeout(5000); // Wait for page to stabilize
                     
-                    const { country, locale } = genericMethods.extractCountryAndLocale(url);
+                    // Extract country and locale using the new method
+                    const urlInfo = await genericMethods.getCountryNameFromURL(process.env.ENV || 'stage', url);
+                    const country = urlInfo.get('country')?.replace('/', '') || '';
+                    const locale = urlInfo.get('locale')?.replace('/', '') || '';
                     
                     const businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
                     await businessTab.click();

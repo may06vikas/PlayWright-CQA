@@ -48,8 +48,10 @@ test.describe('Consonant Card Tests', () => {
       await consonantCardPage.page.waitForLoadState();
       await consonantCardPage.closeGioRoutingPopup();
       
-      // Extract country and locale from URL
-      const { country, locale } = genericMethods.extractCountryAndLocale(url);
+      // Extract country and locale using the new method
+      const urlInfo = await genericMethods.getCountryNameFromURL(process.env.ENV || 'stage', url);
+      const country = urlInfo.get('country')?.replace('/', '') || '';
+      const locale = urlInfo.get('locale')?.replace('/', '') || '';
       
       const cardDetails = await consonantCardPage.getConsonentCardsDetails();
 
