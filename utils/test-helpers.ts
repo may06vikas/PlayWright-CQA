@@ -3,6 +3,19 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { config } from './config';
 
+/**
+ * ========================================================================
+ * Playwright Web Automation Framework - Core Test Helpers
+ * ========================================================================
+ * 
+ * This file contains the fundamental utilities and helper methods used across
+ * the test automation framework. It provides:
+ *  - Type definitions for test data structures
+ *  - GenericMethods class with common web automation actions
+ *  - Utilities for parallel test execution
+ *  - Helper functions for common workflows
+ */
+
 // Types
 export interface TestOptions {
     page: Page;
@@ -22,12 +35,18 @@ interface TestFixture {
 }
 
 /**
- * GenericMethods class containing reusable utility
+ * GenericMethods class containing reusable utility methods for Playwright automation
+ * 
+ * This class encapsulates common operations to perform on web pages such as:
+ * - URL and locale management
+ * - Page navigation and interaction
+ * - Element manipulation and scrolling
+ * - Browser state management
  */
 export class GenericMethods {
   private page: Page;
 
-  // Synchronized collections for storing data
+  // Synchronized collections for storing data during test execution
   public unProcessedList: string[] = [];
   public i: number = 0;
   public j: number = 0;
@@ -43,6 +62,12 @@ export class GenericMethods {
 
   /**
    * Extracts country and locale from a URL
+   * 
+   * This method parses URLs to determine country and locale information based on URL patterns:
+   * - URLs with format example.com/us_en/ (country_locale format)
+   * - URLs with two-letter country codes
+   * - URLs with other country/locale formats
+   * 
    * @param url - The URL to parse
    * @returns Object with country and locale information
    */
@@ -66,7 +91,10 @@ export class GenericMethods {
   }
 
   /**
-   * This method will get country and locale from pageURL
+   * Gets country and locale from page URL based on environment
+   * 
+   * This method handles different URL patterns across various environments 
+   * (live, stage, production) and extracts locale from DOM when needed.
    *
    * @param testEnv - The environment (live, stage, prod, etc.)
    * @param url - The URL to parse
@@ -142,6 +170,10 @@ export class GenericMethods {
 
   /**
    * Gets locale and country information from the DOM
+   * 
+   * Extracts the language attribute from the HTML tag, which often contains
+   * locale information in format like 'en-US'
+   * 
    * @returns The language attribute value from the HTML tag
    */
   async getLocaleAndCountryFromDom(): Promise<string> {
@@ -224,6 +256,10 @@ export class GenericMethods {
 
   /**
    * Scrolls to a specific element on the page
+   * 
+   * Useful for bringing elements into view before interacting with them,
+   * especially for pages with lazy-loading or dynamic content
+   * 
    * @param selector - The selector for the element to scroll to
    */
   async scrollToElement(selector: string): Promise<void> {
@@ -241,6 +277,8 @@ export class GenericMethods {
 
   /**
    * Scrolls to the end of the page
+   * 
+   * Useful for triggering lazy loading content or infinite scroll pages
    */
   async scrollToPageEnd(): Promise<void> {
     await this.page.evaluate(() => {
@@ -250,6 +288,8 @@ export class GenericMethods {
 
   /**
    * Scrolls to the top of the page
+   * 
+   * Useful for returning to navigation elements typically located at the top
    */
   async scrollToPageTop(): Promise<void> {
     await this.page.evaluate(() => {
@@ -267,6 +307,9 @@ export class GenericMethods {
 
   /**
    * Opens a specific URL
+   * 
+   * Navigates to the URL and waits for DOM content to be loaded
+   * 
    * @param url - The URL to open
    */
   async openUrl(url: string): Promise<void> {
@@ -275,6 +318,9 @@ export class GenericMethods {
 
   /**
    * Enters text into a field
+   * 
+   * Clears the field first, then enters the new text
+   * 
    * @param selector - The selector for the input field
    * @param text - The text to enter
    */
@@ -302,6 +348,8 @@ export class GenericMethods {
 
   /**
    * Waits for the page to finish loading
+   * 
+   * Waits for both DOM content and network requests to complete
    */
   async waitTillPageLoads(): Promise<void> {
     await this.page.waitForLoadState('domcontentloaded');
@@ -309,7 +357,9 @@ export class GenericMethods {
   }
 
   /**
-   * Clears browser cookies
+   * Clears browser cookies and storage
+   * 
+   * Useful for testing in a clean state or for logout scenarios
    */
   async clearBrowserCookies(): Promise<void> {
     await this.page.context().clearCookies();
@@ -322,7 +372,14 @@ export class GenericMethods {
 }
 
 /**
- * Creates tests distributed across multiple workers
+ * Creates tests distributed across multiple worker processes
+ * 
+ * This function divides testing workload across multiple parallel workers
+ * to improve test execution speed. Each worker gets a subset of the tests
+ * to run concurrently.
+ * 
+ * @param testName - The base name for the tests
+ * @param testFn - The function containing the test logic
  */
 export function createWorkerTests(
     testName: string,
@@ -345,7 +402,13 @@ export function createWorkerTests(
 }
 
 /**
- * Creates parallel tests for each sheet
+ * Creates parallel tests for each data sheet
+ * 
+ * This function creates separate test cases for each sheet in the test data,
+ * enabling parallel processing of multiple data sets.
+ * 
+ * @param testFn - The function containing the test logic
+ * @param sheetNames - Array of Excel sheet names to process
  */
 export function createParallelTests(testFn: (options: TestOptions) => Promise<void>, sheetNames: string[]) {
     for (const sheetName of sheetNames) {
@@ -361,7 +424,13 @@ export function createParallelTests(testFn: (options: TestOptions) => Promise<vo
 }
 
 /**
- * Common modal handling
+ * Handles geo-location popup modals
+ * 
+ * Many websites display location-based popups on initial visit.
+ * This function detects and closes such modals to prevent them
+ * from interfering with automated tests.
+ * 
+ * @param page - The Playwright page object
  */
 export async function closeGeoPopUpModal(page: Page) {
     try {
