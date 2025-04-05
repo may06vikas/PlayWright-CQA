@@ -2,6 +2,7 @@ import { test } from '@playwright/test';
 import { getUrlsForWorker, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { MerchCard } from '../src/merchCard.page';
 import { createWorkerTests, extractCountryAndLocale, closeGeoPopUpModal } from '../../../utils/test-helpers';
+import { CommonUtils } from '../../../utils/common';
 import * as path from 'path';
 
 interface MerchCardData {
@@ -62,60 +63,72 @@ function createOutputRow(url: string, country: string, locale: string, merchCard
 const testResultsDir = path.join(process.cwd(), 'test-results');
 
 // Create worker-based tests
-createWorkerTests('MerchCard Tests', async ({ page, workerIndex, totalWorkers }) => {
+createWorkerTests('MerchCard Tests', async ({ page: oldPage, workerIndex, totalWorkers }) => {
+    const browser = oldPage.context().browser();
+    if (!browser) {
+        throw new Error('Browser instance not found');
+    }
+    
+    // Create fresh context for this worker
+    const { context, page } = await CommonUtils.createFreshContext(browser);
     const merchCard = new MerchCard(page);
     
-    // Get URLs assigned to this worker
-    const urlsBySheet = await getUrlsForWorker(workerIndex, totalWorkers);
-    console.log(`Worker ${workerIndex + 1} received ${Array.from(urlsBySheet.keys()).length} sheets to process`);
-    
-    // Process each sheet's URLs
-    for (const [sheetName, urls] of urlsBySheet.entries()) {
-        console.log(`Worker ${workerIndex + 1} processing sheet ${sheetName} with ${urls.length} URLs`);
+    try {
+        // Get URLs assigned to this worker
+        const urlsBySheet = await getUrlsForWorker(workerIndex, totalWorkers);
+        console.log(`Worker ${workerIndex + 1} received ${Array.from(urlsBySheet.keys()).length} sheets to process`);
         
-        const sheetResults = [[
-            "URL", "Country", "Locale", "Tab Name", "Merch Card Visibility", 
-            "Merch Card Title", "Merch Card CTA", "CTA Href", "Card Count", "GenAI Bar", "Validation Status"
-        ]];
-        
-        for (const url of urls) {
+        // Process each sheet's URLs
+        for (const [sheetName, urls] of urlsBySheet.entries()) {
+            console.log(`Worker ${workerIndex + 1} processing sheet ${sheetName} with ${urls.length} URLs`);
+            
+            const sheetResults = [[
+                "URL", "Country", "Locale", "Tab Name", "Merch Card Visibility", 
+                "Merch Card Title", "Merch Card CTA", "CTA Href", "Card Count", "GenAI Bar", "Validation Status"
+            ]];
+            
+            for (const url of urls) {
+                try {
+                    console.log(`Worker ${workerIndex + 1} processing URL: ${url}`);
+                    await page.goto(url);
+                    await page.waitForTimeout(4000); // Wait for initial load
+                    
+                    // Handle geo popup if present
+                    await closeGeoPopUpModal(page);
+                    
+                    await page.waitForTimeout(5000); // Wait for page to stabilize
+                    
+                    const { country, locale } = extractCountryAndLocale(url);
+                    
+                    const businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
+                    await businessTab.click();
+                    await page.waitForTimeout(5000);
+                    
+                    const merchCardData = await merchCard.getMerchCardData();
+                    const row = createOutputRow(url, country, locale, merchCardData);
+                    sheetResults.push(row);
+                    
+                } catch (error) {
+                    console.error(`Worker ${workerIndex + 1} error processing URL ${url}:`, error);
+                    sheetResults.push([
+                        url, "Error", "Error", "Error", "Error", "Error", "Error", "Error", "0", "Error", "Fail"
+                    ]);
+                }
+            }
+            
             try {
-                console.log(`Worker ${workerIndex + 1} processing URL: ${url}`);
-                await page.goto(url);
-                await page.waitForTimeout(4000); // Wait for initial load
+                const resultsBySheet = new Map<string, any[]>();
+                resultsBySheet.set(sheetName, sheetResults);
                 
-                // Handle geo popup if present
-                await closeGeoPopUpModal(page);
-                
-                await page.waitForTimeout(5000); // Wait for page to stabilize
-                
-                const { country, locale } = extractCountryAndLocale(url);
-                
-                const businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
-                await businessTab.click();
-                await page.waitForTimeout(5000);
-                
-                const merchCardData = await merchCard.getMerchCardData();
-                const row = createOutputRow(url, country, locale, merchCardData);
-                sheetResults.push(row);
-                
+                const outputPath = path.join(testResultsDir, `merchCard_results_worker${workerIndex + 1}_${sheetName}.xlsx`);
+                await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
+                console.log(`Worker ${workerIndex + 1} saved results for ${sheetName} to ${outputPath}`);
             } catch (error) {
-                console.error(`Worker ${workerIndex + 1} error processing URL ${url}:`, error);
-                sheetResults.push([
-                    url, "Error", "Error", "Error", "Error", "Error", "Error", "Error", "0", "Error", "Fail"
-                ]);
+                console.error(`Worker ${workerIndex + 1} error saving results for ${sheetName}:`, error);
             }
         }
-        
-        try {
-            const resultsBySheet = new Map<string, any[]>();
-            resultsBySheet.set(sheetName, sheetResults);
-            
-            const outputPath = path.join(testResultsDir, `merchCard_results_worker${workerIndex + 1}_${sheetName}.xlsx`);
-            await saveDataToExcelMultiSheet(resultsBySheet, outputPath);
-            console.log(`Worker ${workerIndex + 1} saved results for ${sheetName} to ${outputPath}`);
-        } catch (error) {
-            console.error(`Worker ${workerIndex + 1} error saving results for ${sheetName}:`, error);
-        }
+    } finally {
+        // Always close the context when done
+        await context.close();
     }
 }); 

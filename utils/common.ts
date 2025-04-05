@@ -1,10 +1,28 @@
-import { Page } from '@playwright/test';
+import { Page, Browser, BrowserContext } from '@playwright/test';
 
 export class CommonUtils {
     private page: Page;
 
     constructor(page: Page) {
         this.page = page;
+    }
+
+    /**
+     * Creates a fresh browser context with cleared cookies and storage
+     * @param browser Browser instance
+     * @returns Promise<{ context: BrowserContext, page: Page }>
+     */
+    static async createFreshContext(browser: Browser): Promise<{ context: BrowserContext, page: Page }> {
+        // Create a fresh context (this automatically starts with no cookies/storage)
+        const context = await browser.newContext({
+            // viewport: null,
+
+        });
+        
+        // Create a new page in this context
+        const page = await context.newPage();
+        
+        return { context, page };
     }
 
     /**
