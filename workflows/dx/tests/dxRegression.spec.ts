@@ -2,6 +2,7 @@ import { test, Page, BrowserContext } from '@playwright/test';
 import { Consonant_Card } from '../src/dxRegression.page';
 import { saveDataToExcel, readUrlsFromSheet } from '../../../utils/excelJS_utils';
 import { CommonUtils } from '../../../utils/common';
+import { GenericMethods } from '../../../utils/test-helpers';
 
 const productDetails = [
   {
@@ -20,6 +21,7 @@ test.describe('Consonant Card Tests', () => {
   let page: Page;
   let context: BrowserContext;
   let consonantCardPage: Consonant_Card;
+  let genericMethods: GenericMethods;
 
   test.beforeEach(async ({ browser }) => {
     // Use the common method to create fresh context and page
@@ -27,6 +29,7 @@ test.describe('Consonant Card Tests', () => {
     context = newContext;
     page = newPage;
     consonantCardPage = new Consonant_Card(page);
+    genericMethods = new GenericMethods(page);
   });
 
   test.afterEach(async () => {
@@ -36,7 +39,7 @@ test.describe('Consonant Card Tests', () => {
 
   test('Launch URLs from Excel to validate consonent card', async () => {
     const urls = await readUrlsFromSheet('Sheet1');
-    let allCardDetails: { sourceUrl: string; visible: string; href: string | null; statusCode: number }[] = [];
+    let allCardDetails: { sourceUrl: string; country: string; locale: string; visible: string; href: string | null; statusCode: number }[] = [];
 
     for (const url of urls) {
       console.log(`Running test for URL: ${url}`);
@@ -44,10 +47,16 @@ test.describe('Consonant Card Tests', () => {
       await consonantCardPage.launchUrl(url);
       await consonantCardPage.page.waitForLoadState();
       await consonantCardPage.closeGioRoutingPopup();
+      
+      // Extract country and locale from URL
+      const { country, locale } = genericMethods.extractCountryAndLocale(url);
+      
       const cardDetails = await consonantCardPage.getConsonentCardsDetails();
 
       const enrichedCardDetails = cardDetails.map(card => ({
         sourceUrl: url,
+        country: country,
+        locale: locale,
         visible: card.isVisible ? 'true' : 'false',
         href: card.href,
         statusCode: card.statusCode,
