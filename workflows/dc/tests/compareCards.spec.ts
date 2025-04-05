@@ -6,61 +6,84 @@ import * as path from 'path';
 import { config } from '../../../utils/config';
 import { CommonUtils } from '../../../utils/common';
 
+/**
+ * ========================================================================
+ * Compare Cards Component Test Automation
+ * ========================================================================
+ * 
+ * This test suite validates the Compare Cards component across multiple URLs.
+ * It checks for:
+ * - Visibility of compare cards component
+ * - Presence of expected number of cards (3)
+ * - Correct titles on each card
+ * - Presence of CTAs with valid hrefs
+ * 
+ * The tests run in parallel across multiple workers for efficiency.
+ * Results are saved to Excel files for each test sheet and worker.
+ */
+
+/**
+ * Interface representing the data structure for Compare Cards components
+ * This defines the shape of data that will be extracted from the web pages
+ */
 interface CompareCardsData {
-    compareCardsVis: string;
-    compareCardsCount: string;
-    compareCard1Title: string;
-    compareCard2Title: string;
-    compareCard3Title: string;
-    compareCardsCTAs: string[];
-    compareCardsCTAHrefs: string[];
+    compareCardsVis: string;     // Visibility status
+    compareCardsCount: string;   // Number of cards found
+    compareCard1Title: string;   // Title of first card
+    compareCard2Title: string;   // Title of second card
+    compareCard3Title: string;   // Title of third card
+    compareCardsCTAs: string[];  // Array of CTA texts
+    compareCardsCTAHrefs: string[]; // Array of CTA URLs
 }
 
-function validateCompareCardsData(compareCardsData: CompareCardsData): string {
-    const requiredFields = [
-        { value: compareCardsData.compareCardsVis, name: "Compare Cards Visibility" },
-        { value: compareCardsData.compareCard1Title, name: "Card 1 Title" },
-        { value: compareCardsData.compareCard2Title, name: "Card 2 Title" },
-        { value: compareCardsData.compareCard3Title, name: "Card 3 Title" }
-    ];
-
-    const failedFields = requiredFields.filter(field => 
-        field.value === "Not Visible" || field.value === "NA" || field.value === ""
-    );
-
-    if (failedFields.length > 0) {
-        console.log("Failed fields:", failedFields.map(f => f.name).join(", "));
-        return "Fail";
-    }
-
-    if (parseInt(compareCardsData.compareCardsCount) !== 3) {
-        console.log(`Card count validation failed. Expected 3, found ${compareCardsData.compareCardsCount}`);
-        return "Fail";
-    }
-
-    if (compareCardsData.compareCardsCTAs.length !== 3 || compareCardsData.compareCardsCTAHrefs.length !== 3) {
-        console.log("CTA validation failed. Expected 3 CTAs and hrefs");
-        return "Fail";
-    }
-
-    return "Pass";
-}
-
-function createOutputRow(url: string, country: string, locale: string, compareCardsData: CompareCardsData): any[] {
-    const validationStatus = validateCompareCardsData(compareCardsData);
+/**
+ * Creates a row of data for the results spreadsheet
+ * @param url The URL being tested
+ * @param country The country code extracted from the URL
+ * @param locale The locale code extracted from the URL
+ * @param data The compare cards data extracted from the page
+ * @returns An array representing a row in the results spreadsheet
+ */
+function createOutputRow(url: string, country: string, locale: string, data: CompareCardsData): any[] {
     return [
         url,
         country,
         locale,
-        compareCardsData.compareCardsVis,
-        compareCardsData.compareCardsCount,
-        compareCardsData.compareCard1Title,
-        compareCardsData.compareCard2Title,
-        compareCardsData.compareCard3Title,
-        compareCardsData.compareCardsCTAs.join(" | "),
-        compareCardsData.compareCardsCTAHrefs.join(" | "),
-        validationStatus
+        data.compareCardsVis,
+        data.compareCardsCount,
+        data.compareCard1Title,
+        data.compareCard2Title,
+        data.compareCard3Title,
+        data.compareCardsCTAs.join(" | "),      // Join array values for Excel
+        data.compareCardsCTAHrefs.join(" | "),  // Join array values for Excel
+        validateCardData(data)
     ];
+}
+
+/**
+ * Validates the compare cards data
+ * @param data The compare cards data to validate
+ * @returns "Pass" if validation succeeds, "Fail" with reason otherwise
+ */
+function validateCardData(data: CompareCardsData): string {
+    if (data.compareCardsVis !== "Visible") {
+        return "Fail - Cards not visible";
+    }
+    
+    const cardCount = parseInt(data.compareCardsCount);
+    if (cardCount !== 3) {
+        return `Fail - Expected 3 cards, found ${cardCount}`;
+    }
+    
+    if (!data.compareCard1Title || !data.compareCard2Title || !data.compareCard3Title) {
+        return "Fail - Missing card title(s)";
+    }
+    
+    if (data.compareCardsCTAs.length !== 3 || data.compareCardsCTAHrefs.length !== 3) {
+        return "Fail - Missing CTAs or CTA hrefs";
+    }
+    
+    return "Pass";
 }
 
 createWorkerTests('Compare Cards Tests', async ({ page: oldPage, workerIndex, totalWorkers }) => {
