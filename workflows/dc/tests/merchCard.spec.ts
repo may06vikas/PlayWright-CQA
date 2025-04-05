@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import { getUrlsForWorker, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { MerchCard } from '../src/merchCard.page';
-import { createWorkerTests, extractCountryAndLocale, closeGeoPopUpModal } from '../../../utils/test-helpers';
+import { createWorkerTests, GenericMethods, closeGeoPopUpModal } from '../../../utils/test-helpers';
 import { CommonUtils } from '../../../utils/common';
 import * as path from 'path';
 
@@ -72,6 +72,7 @@ createWorkerTests('MerchCard Tests', async ({ page: oldPage, workerIndex, totalW
     // Create fresh context for this worker
     const { context, page } = await CommonUtils.createFreshContext(browser);
     const merchCard = new MerchCard(page);
+    const genericMethods = new GenericMethods(page);
     
     try {
         // Get URLs assigned to this worker
@@ -98,7 +99,7 @@ createWorkerTests('MerchCard Tests', async ({ page: oldPage, workerIndex, totalW
                     
                     await page.waitForTimeout(5000); // Wait for page to stabilize
                     
-                    const { country, locale } = extractCountryAndLocale(url);
+                    const { country, locale } = genericMethods.extractCountryAndLocale(url);
                     
                     const businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
                     await businessTab.click();

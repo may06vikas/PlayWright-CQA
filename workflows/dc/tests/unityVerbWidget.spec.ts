@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import { getUrlsForWorker, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { UnityVerbWidget } from '../src/unityVerbWidget.page';
-import { createWorkerTests, extractCountryAndLocale, closeGeoPopUpModal } from '../../../utils/test-helpers';
+import { createWorkerTests, GenericMethods, closeGeoPopUpModal } from '../../../utils/test-helpers';
 import * as path from 'path';
 import { config } from '../../../utils/config';
 
@@ -52,6 +52,7 @@ function createOutputRow(url: string, country: string, locale: string, unityVerb
 // Create worker-based tests
 createWorkerTests('Unity Verb Widget Tests', async ({ page, workerIndex, totalWorkers }) => {
     const unityVerb = new UnityVerbWidget(page);
+    const genericMethods = new GenericMethods(page);
     
     // Get URLs assigned to this worker
     const urlsBySheet = await getUrlsForWorker(workerIndex, totalWorkers);
@@ -77,7 +78,7 @@ createWorkerTests('Unity Verb Widget Tests', async ({ page, workerIndex, totalWo
                 
                 await page.waitForTimeout(config.timeouts.pageLoad); // Wait for page to stabilize
                 
-                const { country, locale } = extractCountryAndLocale(url);
+                const { country, locale } = genericMethods.extractCountryAndLocale(url);
                 
                 const businessTab = page.locator("//div[contains(@daa-lh,'tabs') or contains(@class,'tabs')][not(contains(@id,'demo') or contains(@id,'tabs-genaipdfstudents') or contains(@id,'tabs-prompts'))]//div[@class='tab-list-container' and @data-pretext='undefined']/button[not(./ancestor::div[contains(@class,'radio') and @id])]").nth(1);
                 await businessTab.click();

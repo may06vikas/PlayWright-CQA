@@ -1,7 +1,7 @@
 import { test } from '@playwright/test';
 import { getUrlsForWorker, saveDataToExcelMultiSheet } from '../../../utils/excelJS_utils';
 import { CompareCards } from '../src/compareCards.page';
-import { createWorkerTests, extractCountryAndLocale, closeGeoPopUpModal } from '../../../utils/test-helpers';
+import { createWorkerTests, GenericMethods, closeGeoPopUpModal } from '../../../utils/test-helpers';
 import * as path from 'path';
 import { config } from '../../../utils/config';
 
@@ -64,6 +64,7 @@ function createOutputRow(url: string, country: string, locale: string, compareCa
 
 createWorkerTests('Compare Cards Tests', async ({ page, workerIndex, totalWorkers }) => {
     const compareCards = new CompareCards(page);
+    const genericMethods = new GenericMethods(page);
     
     // Get URLs assigned to this worker
     const urlsBySheet = await getUrlsForWorker(workerIndex, totalWorkers);
@@ -90,7 +91,7 @@ createWorkerTests('Compare Cards Tests', async ({ page, workerIndex, totalWorker
                 
                 await page.waitForTimeout(5000); // Wait for page to stabilize
                 
-                const { country, locale } = extractCountryAndLocale(url);
+                const { country, locale } = genericMethods.extractCountryAndLocale(url);
                 const compareCardsData = await compareCards.getCompareCardsData();
                 
                 const row = createOutputRow(url, country, locale, compareCardsData);
