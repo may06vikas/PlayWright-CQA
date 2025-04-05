@@ -1,6 +1,7 @@
-import { test, Page } from '@playwright/test';
+import { test, Page, BrowserContext } from '@playwright/test';
 import { Consonant_Card } from '../src/dxRegression.page';
-import { saveDataToExcel, readUrlsFromExcel } from '../../../utils/excelJS_utils';
+import { saveDataToExcel, readUrlsFromSheet } from '../../../utils/excelJS_utils';
+import { CommonUtils } from '../../../utils/common';
 
 const productDetails = [
   {
@@ -17,15 +18,24 @@ const productDetails = [
 
 test.describe('Consonant Card Tests', () => {
   let page: Page;
+  let context: BrowserContext;
   let consonantCardPage: Consonant_Card;
 
   test.beforeEach(async ({ browser }) => {
-    page = await browser.newPage();
+    // Use the common method to create fresh context and page
+    const { context: newContext, page: newPage } = await CommonUtils.createFreshContext(browser);
+    context = newContext;
+    page = newPage;
     consonantCardPage = new Consonant_Card(page);
   });
 
+  test.afterEach(async () => {
+    // Close the context after each test to clean up
+    await context.close();
+  });
+
   test('Launch URLs from Excel to validate consonent card', async () => {
-    const urls = await readUrlsFromExcel();
+    const urls = await readUrlsFromSheet('Sheet1');
     let allCardDetails: { sourceUrl: string; visible: string; href: string | null; statusCode: number }[] = [];
 
     for (const url of urls) {
