@@ -61,33 +61,70 @@ export class GenericMethods {
   }
 
   /**
-   * Extracts country and locale from a URL
+   * Extracts country and locale information from URL and DOM
+   * Handles special paths like 'acrobat' and 'online'
+   * Gets locale from DOM's lang attribute
    * 
-   * This method parses URLs to determine country and locale information based on URL patterns:
-   * - URLs with format example.com/us_en/ (country_locale format)
-   * - URLs with two-letter country codes
-   * - URLs with other country/locale formats
-   * 
-   * @param url - The URL to parse
-   * @returns Object with country and locale information
+   * @param url - The URL to process
+   * @param env - The environment (stage, live, prod, etc.)
+   * @returns Object containing country and locale
    */
-  extractCountryAndLocale(url: string): CountryLocale {
-    try {
-        const urlParts = url.split(".com/")[1]?.split("/") || [];
-        const countryLocale = urlParts[0] || "";
-        
-        if (countryLocale.includes("_")) {
-            const [country, locale] = countryLocale.split("_");
-            return { country, locale };
-        } else if (countryLocale.length === 2) {
-            return { country: countryLocale, locale: countryLocale };
-        } else {
-            return { country: countryLocale, locale: countryLocale };
+  async extractCountryAndLocaleInfo(url: string, env: string = 'stage'): Promise<{ country: string; locale: string }> {
+    // Get locale from DOM's lang attribute first
+    const langAttribute = await this.page.locator('html[lang]').getAttribute('lang') || '';
+    let locale = langAttribute.split('-')[0] || '';
+    let country = langAttribute.split('-')[1]?.toLowerCase() || '';
+
+    // Clean URL and split into parts
+    const urlParts = url.split('/').filter(part => part && !part.includes('.html') && !part.includes('.htm'));
+    
+    // Special paths to ignore
+    const specialPaths = ['acrobat', 'online', 'pdf-reader', 'pdf'];
+    
+    // Find potential country segment
+    for (let i = 0; i < urlParts.length; i++) {
+      const part = urlParts[i].toLowerCase();
+      
+      // Skip special paths
+      if (specialPaths.includes(part)) {
+        continue;
+      }
+      
+      // Check for country_locale format
+      if (part.includes('_')) {
+        const [countryPart, localePart] = part.split('_');
+        country = countryPart;
+        // Only update locale if we couldn't get it from lang attribute
+        if (!locale) {
+          locale = localePart;
         }
-    } catch (error) {
-        console.error("Error extracting country and locale:", error);
-        return { country: "", locale: "" };
+        break;
+      }
+      
+      // Check for two-letter country codes
+      if (part.length === 2 && /^[a-zA-Z]{2}$/.test(part)) {
+        country = part;
+        break;
+      }
     }
+
+    // Clean up country and locale
+    country = country.replace(/^\/+|\/+$/g, '');
+    locale = locale.replace(/^\/+|\/+$/g, '');
+
+    // If still no country, try getting it from the URL using existing method
+    if (!country) {
+      const urlInfo = await this.getCountryNameFromURL(env, url);
+      country = urlInfo.get('country')?.replace(/^\/+|\/+$/g, '') || '';
+    }
+
+    // Log for debugging
+    console.log('URL Parts:', urlParts);
+    console.log('Lang Attribute:', langAttribute);
+    console.log('Final Country:', country);
+    console.log('Final Locale:', locale);
+
+    return { country, locale };
   }
 
   /**
@@ -184,74 +221,6 @@ export class GenericMethods {
       console.error('Error getting locale from DOM:', ex);
     }
     return localeAndCountry;
-  }
-
-  /**
-   * Alternative method to get country and locale from URL
-   * This version doesn't fetch locale from DOM for some environments
-   * 
-   * @param testEnv - The environment (live, stage, prod, etc.)
-   * @param url - The URL to parse
-   * @returns Map with country and locale information
-   */
-  async getCountryNameFromURL1(testEnv: string, url: string): Promise<Map<string, string>> {
-    const map = new Map<string, string>();
-    let country: string = '';
-    let locale: string = '';
-    
-    try {
-      const arr = url.split('/');
-      
-      switch (testEnv) {
-        case 'live':
-          if (arr[3].includes('_')) {
-            country = '/' + arr[3].split('_')[0];
-            locale = arr[3].split('_')[1] + '/';
-          } else {
-            country = '/' + arr[3];
-            locale = '';
-          }
-          console.log(`Country---> ${country}: Locale---> ${locale}`);
-          break;
-        
-        case 'stage':
-          if (arr[3].includes('_')) {
-            country = '/' + arr[3].split('_')[0];
-            locale = arr[3].split('_')[1] + '/';
-          } else {
-            country = '/' + arr[3];
-            locale = '';
-          }
-          console.log(`Country---> ${country}: Locale---> ${locale}`);
-          break;
-        
-        case 'prod':
-          country = '/' + arr[5];
-          locale = arr[6] + '/';
-          console.log(`Country---> ${arr[5]}: Locale---> ${arr[6]}`);
-          break;
-        
-        case 'us':
-          country = '/us';
-          locale = 'en/';
-          console.log(`Country---> ${country}: Locale---> ${locale}`);
-          break;
-        
-        default:
-          country = '';
-          locale = '';
-          console.log('Country and locale not found in url');
-          break;
-      }
-      
-      map.set('country', country);
-      map.set('locale', locale);
-    } catch (e) {
-      // Error handling
-      console.error('Error parsing URL:', e);
-    }
-    
-    return map;
   }
 
   /**
@@ -434,9 +403,9 @@ export function createParallelTests(testFn: (options: TestOptions) => Promise<vo
  */
 export async function closeGeoPopUpModal(page: Page) {
     try {
-        const modal = page.locator("div[class*='modal']");
+        const modal = page.locator("//div[@daa-lh='locale-modal-v2-modal']/child::button");
         if (await modal.isVisible()) {
-            await modal.locator("button").click();
+          await modal.click();
         }
     } catch (error) {
         console.log("No geo popup modal found or error closing it:", error);

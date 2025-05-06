@@ -109,10 +109,8 @@ createWorkerTests('MerchCard Tests', async ({ page: oldPage, workerIndex, totalW
                     await page.waitForTimeout(5000); // Wait for page to stabilize
                     
                     // Extract country and locale using the new method
-                    const urlInfo = await genericMethods.getCountryNameFromURL(process.env.ENV || 'stage', url);
-                    const country = urlInfo.get('country')?.replace('/', '') || '';
-                    const locale = urlInfo.get('locale')?.replace('/', '') || '';
-                    
+                    const { country, locale } = await genericMethods.extractCountryAndLocaleInfo(url, process.env.ENV || 'stage');
+
                     const businessTab = page.locator("//div[contains(@id,'compare') or contains(@id,'plans-and-pricing')]/child::div/child::div[contains(@class,'list')]/child::button").nth(1);
                     await businessTab.click();
                     await page.waitForTimeout(5000);

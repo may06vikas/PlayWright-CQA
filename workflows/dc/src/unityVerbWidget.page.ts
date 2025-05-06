@@ -70,19 +70,93 @@ export class UnityVerbWidget {
 
 
         // Edit a PDF Widget Locators:
-        this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
-        this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-title')]");
-        this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-icon')]");
-        this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-heading')]");
-        this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-copy')]");
-        this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//div[contains(@class,'verb-image')]");
-        this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//button[contains(@for,'file-upload')]");
-        this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//div[contains(@class,'security-icon')]");
-        this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[@class='verb-legal']");
-        this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'legal-two')]");
-        this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
-        this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'info-icon milo-tooltip right')]");
+        // this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
+        // this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-title')]");
+        // this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-icon')]");
+        // this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-heading')]");
+        // this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'verb-copy')]");
+        // this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//div[contains(@class,'verb-image')]");
+        // this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//button[contains(@for,'file-upload')]");
+        // this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//div[contains(@class,'security-icon')]");
+        // this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[@class='verb-legal']");
+        // this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'legal-two')]");
+        // this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
+        // this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget add-comment unity-enabled')]//*[contains(@class,'info-icon milo-tooltip right')]");
 
+        // Delete PDF Widget Locators:
+        // this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
+        // this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'verb-title')]");
+        // this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'verb-icon')]");
+        // this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'verb-heading')]");
+        // this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'verb-copy')]");
+        // this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//div[contains(@class,'verb-image')]");
+        // this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//button[contains(@for,'file-upload')]");
+        // this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//div[contains(@class,'security-icon')]");
+        // this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[@class='verb-legal']");
+        // this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'legal-two')]");
+        // this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
+        // this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget delete-pages unity-enabled')]//*[contains(@class,'info-icon milo-tooltip top')]");
+
+        // Add Pages to PDF Widget Locators:
+        // this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
+        // this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'verb-title')]");
+        // this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'verb-icon')]"); 
+        // this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'verb-heading')]");
+        // this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'verb-copy')]");
+        // this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//div[contains(@class,'verb-image')]");
+        // this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//button[contains(@for,'file-upload')]");
+        // this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//div[contains(@class,'security-icon')]");
+        // this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[@class='verb-legal']");
+        // this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'legal-two')]");
+        // this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
+        // this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget insert-pdf unity-enabled')]//*[contains(@class,'info-icon milo-tooltip top')]");
+
+
+
+        // Rearrange PDF Pages: 
+        // this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
+        // this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'verb-title')]");
+        // this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'verb-icon')]"); 
+        // this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'verb-heading')]");
+        // this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'verb-copy')]");
+        // this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//div[contains(@class,'verb-image')]");
+        // this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//button[contains(@for,'file-upload')]");
+        // this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//div[contains(@class,'security-icon')]");
+        // this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[@class='verb-legal']");
+        // this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'legal-two')]");
+        // this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
+        // this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget reorder-pages unity-enabled')]//*[contains(@class,'info-icon milo-tooltip top')]");
+
+
+        // Extract PDF Pages:
+        this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
+        this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'verb-title')]");
+        this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'verb-icon')]"); 
+        this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'verb-heading')]");
+        this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'verb-copy')]");
+        this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//div[contains(@class,'verb-image')]");
+        this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//button[contains(@for,'file-upload')]");
+        this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//div[contains(@class,'security-icon')]");
+        this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[@class='verb-legal']");
+        this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'legal-two')]");
+        this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
+        this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget extract-pages unity-enabled')]//*[contains(@class,'info-icon milo-tooltip top')]");
+
+
+        // Send PDF for Signature:
+        // this.unityBlockVerbWidget = page.locator("//div[@class='section']//div[contains(@daa-lh,'b1|verb-widget') or contains(@daa-lh,'b2|unity')]");
+        // this.unityBlockVerbWidgetTitle = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'verb-title')]");
+        // this.unityBlockVerbWidgetLogo = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'verb-icon')]"); 
+        // this.unityBlockVerbWidgetHeader = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'verb-heading')]");
+        // this.unityBlockVerbWidgetDesc = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'verb-copy')]");
+        // this.unityBlockVerbWidgetImage = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//div[contains(@class,'verb-image')]");
+        // this.unityBlockVerbWidgetFileUploadButton = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//button[contains(@for,'file-upload')]");
+        // this.unityBlockfooterSecurityIcon = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//div[contains(@class,'security-icon')]");
+        // this.unityBlockVerbWidgetFooterLegalText = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[@class='verb-legal']");
+        // this.unityBlockVerbWidgetFooterLegal2Text = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'legal-two')]");
+        // this.unityBlockVerbWidgetFooterTermsLink = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'legal-two')]//a[contains(@class,'url')]");
+        // this.unityBlockVerbWidgetFooterToolTip = page.locator("//div[contains(@class,'verb-widget sendforsignature unity-enabled')]//*[contains(@class,'info-icon milo-tooltip top')]");   
+        
     }
 
     async closeGeoPopUpModal() {
@@ -310,28 +384,29 @@ export class UnityVerbWidget {
         return widgetData;
     }
 
-    async getUnityVerbData() {
-        return {
-            widgetVis: await this.getElementVisibility('div[class*="unity-verb-widget"]'),
-            widgetTitle: await this.getElementText('div[class*="unity-verb-widget"] .title'),
-            widgetCTA: await this.getElementText('div[class*="unity-verb-widget"] .cta'),
-            widgetCTAHref: await this.getElementAttribute('div[class*="unity-verb-widget"] .cta', 'href'),
-            tabName: await this.getElementText('button.active[role="tab"]')
-        };
-    }
 
-    private async getElementVisibility(selector: string): Promise<string> {
-        const element = this.page.locator(selector);
-        return await element.isVisible() ? "Visible" : "Not Visible";
-    }
+    // async getUnityVerbData() {
+    //     return {
+    //         widgetVis: await this.getElementVisibility('div[class*="unity-verb-widget"]'),
+    //         widgetTitle: await this.getElementText('div[class*="unity-verb-widget"] .title'),
+    //         widgetCTA: await this.getElementText('div[class*="unity-verb-widget"] .cta'),
+    //         widgetCTAHref: await this.getElementAttribute('div[class*="unity-verb-widget"] .cta', 'href'),
+    //         tabName: await this.getElementText('button.active[role="tab"]')
+    //     };
+    // }
 
-    private async getElementText(selector: string): Promise<string> {
-        const element = this.page.locator(selector);
-        return await element.isVisible() ? (await element.textContent() || "") : "Not Visible";
-    }
+    // private async getElementVisibility(selector: string): Promise<string> {
+    //     const element = this.page.locator(selector);
+    //     return await element.isVisible() ? "Visible" : "Not Visible";
+    // }
 
-    private async getElementAttribute(selector: string, attribute: string): Promise<string> {
-        const element = this.page.locator(selector);
-        return await element.isVisible() ? (await element.getAttribute(attribute) || "") : "Not Visible";
-    }
+    // private async getElementText(selector: string): Promise<string> {
+    //     const element = this.page.locator(selector);
+    //     return await element.isVisible() ? (await element.textContent() || "") : "Not Visible";
+    // }
+
+    // private async getElementAttribute(selector: string, attribute: string): Promise<string> {
+    //     const element = this.page.locator(selector);
+    //     return await element.isVisible() ? (await element.getAttribute(attribute) || "") : "Not Visible";
+    // }
 } 
