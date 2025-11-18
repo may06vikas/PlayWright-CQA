@@ -74,14 +74,6 @@ test.describe('Consonant Card Tests', () => {
 
 
 
-
-
-
-
-
-
-
-    // Save all card details to a single Excel file
 //     await saveDataToExcel(allCardDetails, "test-results/output.xlsx");
 //     console.log("All data saved to test-results/output.xlsx");
 // });
@@ -105,3 +97,4 @@ test.describe('Consonant Card Tests', () => {
   //   }
   // });
  
+
