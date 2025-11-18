@@ -17,7 +17,7 @@ The project encompasses four distinct workflows for automated testing:
 2. **DC:** This workflow targets the DC Web application, validating its features and interactions with the DC platform.
 3. **DX:** This workflow aims to test the DX Web application, guaranteeing its content and user experience.
 
-## Table of Contents
+## Table of Contents 
 
 - [Setup](#setup)
 - [Git Repository](#git-repository)
