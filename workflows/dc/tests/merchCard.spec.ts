@@ -68,7 +68,7 @@ function createOutputRow(url: string, country: string, locale: string, merchCard
     ];
 }
 
-// Create test-results directory if it doesn't exist
+
 const testResultsDir = path.join(process.cwd(), 'test-results');
 
 // Create worker-based tests
