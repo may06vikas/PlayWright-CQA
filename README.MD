@@ -139,7 +139,7 @@ To produce an Allure report, utilize the following command:
 allure generate --clean my-allure-results && allure open
 ```
 
-This will generate an Allure report in the specified directory (`allure-results`). The Allure report provides a more in-depth analysis of the test execution, including screenshots, videos, and step-by-step logs.
+This will generate an Allure report in the specified directory (`allure-results`). The Allure report provides a more in-depth analysis of the test execution, including screenshots, videos, and step-by-step logs. test
 
 
 ## Conclusion
