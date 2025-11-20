@@ -15,7 +15,7 @@ Before embarking on the testing journey, ensure that your system meets the follo
 The project encompasses four distinct workflows for automated testing:
 1. **CC:** This workflow focuses on testing the CC Web application, ensuring its core functionalities and user interface elements.
 2. **DC:** This workflow targets the DC Web application, validating its features and interactions with the DC platform.
-3. **DX:** This workflow aims to test the DX Web application, guaranteeing its content and user experience.
+3. **DX:** This workflow aims to test the DX Web application, guaranteeing its content and user experience.Test
 
 ## Table of Contents
 
